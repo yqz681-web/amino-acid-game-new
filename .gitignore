@@ -1,0 +1,14 @@
+# 依赖
+node_modules/
+
+# 运行时数据（学习数据存档，勿提交到 Git）
+data/store.json
+data/*.tmp
+data/*.corrupt-*
+
+# 系统与编辑器
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/

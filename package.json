@@ -1,0 +1,23 @@
+{
+  "name": "amino-acid-game",
+  "version": "2.0.0",
+  "description": "氨基酸分类闯关学园 —— 支持手机/平板/电脑跨端实时同步的生化学习小游戏",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "node server/server.js"
+  },
+  "keywords": [
+    "amino-acid",
+    "biochemistry",
+    "education",
+    "game",
+    "realtime-sync"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {}
+}
