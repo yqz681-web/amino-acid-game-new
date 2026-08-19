@@ -29,19 +29,22 @@ amino-acid-game/
 ├── README.md               # 项目说明（本文件）
 ├── package.json            # 项目配置与启动脚本（零依赖）
 ├── .gitignore              # 忽略 data/ 与 node_modules/
+├── index.html              # 游戏前端入口（含数据档案 UI，支持双后端切换）
+├── js/
+│   ├── sync.js             # 自建后端云同步引擎（身份绑定 / 离线队列 / SSE / 多标签同步）
+│   ├── sync-supabase.js    # Supabase 云同步引擎（RPC 增量同步 / Realtime 实时推送）
+│   └── vendor/
+│       └── supabase.min.js # supabase-js 客户端（本地化，不依赖 CDN）
 ├── server/
 │   ├── server.js           # 自建 Node 后端（方案 B）：静态文件 + REST API + SSE 实时推送
 │   └── storage.js          # 数据存储层：JSON 原子持久化 + 增量合并 + opId 去重
 ├── supabase/
 │   └── schema.sql          # Supabase 建表 + RPC 函数（方案 A，复制到 SQL Editor 执行一次）
-├── public/
-│   ├── index.html          # 游戏前端（含数据档案 UI，支持双后端切换）
-│   └── js/
-│       ├── sync.js         # 自建后端云同步引擎（身份绑定 / 离线队列 / SSE / 多标签同步）
-│       └── sync-supabase.js# Supabase 云同步引擎（RPC 增量同步 / Realtime 实时推送）
 └── data/                   # 自建后端运行时生成的学习数据存档（gitignore）
     └── store.json
 ```
+
+> 说明：`index.html` 与 `js/` 放在仓库根目录，是为了让 GitHub Pages 能直接用「根目录」作为发布源（无需额外配置）。
 
 ---
 

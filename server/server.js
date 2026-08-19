@@ -24,7 +24,7 @@ const storage = require('./storage');
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 
-const PUBLIC_DIR = path.join(__dirname, '..', 'public');
+const PUBLIC_DIR = path.join(__dirname, '..');
 
 // ---------- 工具 ----------
 const MIME = {
