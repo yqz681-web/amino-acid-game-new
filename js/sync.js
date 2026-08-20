@@ -40,6 +40,7 @@
       name: name || '',
       deviceCount: 1,
       practice: 0, pass1: 0, pass2: 0, correct3: 0, click: 0,
+      practiceTime: 0,
       bestCorrect: 0, totalWrong: 0,
       wrongCount: { fx: 0, su: 0, jx: 0, zx: 0, fqx: 0 },
       historyRate: [],
@@ -51,7 +52,7 @@
   function applyOpLocal(user, op) {
     var num = (typeof op.value === 'number' && isFinite(op.value)) ? op.value : 0;
     switch (op.field) {
-      case 'practice': case 'pass1': case 'pass2': case 'correct3': case 'click': case 'totalWrong':
+      case 'practice': case 'pass1': case 'pass2': case 'correct3': case 'click': case 'totalWrong': case 'practiceTime':
         if (op.op === 'inc') user[op.field] = (user[op.field] || 0) + num;
         break;
       case 'bestCorrect':

@@ -13,6 +13,7 @@ create table if not exists public.learning_records (
   pass2        int  not null default 0,
   correct3     int  not null default 0,
   click        int  not null default 0,
+  practice_time bigint not null default 0,
   best_correct int  not null default 0,
   total_wrong  int  not null default 0,
   wrong_fx     int  not null default 0,
@@ -94,6 +95,8 @@ begin
       update public.learning_records set correct3 = correct3 + val where id = p_id;
     elsif f = 'click' then
       update public.learning_records set click = click + val where id = p_id;
+    elsif f = 'practiceTime' then
+      update public.learning_records set practice_time = practice_time + val where id = p_id;
     elsif f = 'totalWrong' then
       update public.learning_records set total_wrong = total_wrong + val where id = p_id;
     elsif f = 'bestCorrect' then
@@ -135,3 +138,7 @@ $$;
 -- 关键：开启 replica identity full，UPDATE 事件才会推送完整行（否则只推主键，前端收不到更新后的数据）
 alter table public.learning_records replica identity full;
 alter publication supabase_realtime add table public.learning_records;
+
+-- 6) 字段迁移（幂等）：为已存在的表补充新增列（如练习时长 practice_time）
+--    每次新增字段后，在此追加一行即可；重跑整个文件即可完成升级
+alter table public.learning_records add column if not exists practice_time bigint not null default 0;

@@ -37,6 +37,7 @@ function emptyUser(id, name) {
     pass2: 0,
     correct3: 0,
     click: 0,
+    practiceTime: 0,
     bestCorrect: 0,
     totalWrong: 0,
     wrongCount: { fx: 0, su: 0, jx: 0, zx: 0, fqx: 0 },
@@ -133,6 +134,7 @@ function applyOp(user, op) {
     case 'pass2':
     case 'correct3':
     case 'click':
+    case 'practiceTime':
     case 'totalWrong':
       if (opType === 'inc') user[field] = (user[field] || 0) + num;
       else if (opType === 'set' && num >= 0) user[field] = num; // set 仅用于首拉校正，一般用 inc
@@ -209,6 +211,7 @@ function snapshot(user) {
     pass2: user.pass2 || 0,
     correct3: user.correct3 || 0,
     click: user.click || 0,
+    practiceTime: user.practiceTime || 0,
     bestCorrect: user.bestCorrect || 0,
     totalWrong: user.totalWrong || 0,
     wrongCount: { fx: 0, su: 0, jx: 0, zx: 0, fqx: 0, ...(user.wrongCount || {}) },

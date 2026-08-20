@@ -6,6 +6,9 @@ data/store.json
 data/*.tmp
 data/*.corrupt-*
 
+# 遗留的重复目录（重构后前端已移到根目录，此目录不再使用）
+public/
+
 # 系统与编辑器
 .DS_Store
 Thumbs.db
