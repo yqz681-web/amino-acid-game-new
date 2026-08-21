@@ -893,7 +893,17 @@
 
         // ========== 欢迎弹窗（学号/昵称绑定） ==========
         window.showWelcome = function() {
-            if (sync.isBound()) return;   // 已绑定则不再打扰
+            var input = document.getElementById('welcomeInput');
+            var note = document.getElementById('welcomeNote');
+            note.style.color = '';
+            if (sync.isBound()) {
+                // 已绑定：预填当前身份，方便一键确认或切换新学号
+                input.value = sync.getUserName();
+                note.innerText = '当前身份：' + sync.getUserName() + ' · 可直接确认或输入新学号';
+            } else {
+                input.value = '';
+                note.innerText = '💡 绑定后可在手机/平板/电脑间实时同步学习数据';
+            }
             document.getElementById('welcomeModal').classList.add('show');
         };
         window.closeWelcome = function() {
