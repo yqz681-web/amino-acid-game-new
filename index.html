@@ -562,7 +562,23 @@
         .student-rate { margin-left: auto; font-weight: 800; color: var(--mint); }
         .student-weak { width: 100%; font-size: 12px; color: var(--danger); }
 
-        .hide { display: none !important; }
+                .export-btn {
+            padding: 8px 18px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: linear-gradient(120deg, var(--brand), var(--brand2));
+            color: #fff;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            box-shadow: var(--glow-brand);
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+        .export-btn:hover { transform: translateY(-1px); filter: brightness(1.06); }
+        .export-btn:active { transform: translateY(1px); }
+
+.hide { display: none !important; }
 
         /* 通关祝贺弹窗 */
         .modal-overlay {
@@ -841,7 +857,7 @@
             </div>
             <div class="stat-block"><div class="stat-block-title">📌 班级评价</div><div id="t_class_overview" style="color:#e6e2ff;font-weight:700;">暂无数据</div></div>
             <div class="stat-block"><div class="stat-block-title">⚠️ 共性薄弱</div><div id="t_class_weak" style="color:#fda4af;font-weight:600;">暂无数据</div></div>
-            <div class="stat-block"><div class="stat-block-title">🧑‍🎓 学生明细</div><div id="t_student_list"><div style="color:#a9a3cf;font-size:14px;">暂无数据</div></div></div>
+            <div class="stat-block"><div class="stat-block-title" style="display:flex; align-items:center; justify-content:space-between; gap:10px;"><span>🧑‍🎓 学生明细</span><button class="export-btn" onclick="exportCSV()">📥 导出 CSV</button></div><div id="t_student_list"><div style="color:#a9a3cf;font-size:14px;">暂无数据</div></div></div>
         </div>
     </div>
 </div>
@@ -1254,6 +1270,51 @@
                     + '</div>';
             });
             document.getElementById('t_student_list').innerHTML = html || '<div style="color:#a9a3cf;font-size:14px;">暂无数据</div>';
+        }
+
+        // ========== 导出学习数据（CSV） ==========
+        function exportCSV() {
+            sync.getAllUsers(function(users) {
+                const list = (users || []).slice().sort(function(a, b) {
+                    const ra = calcRate(a), rb = calcRate(b);
+                    if (rb !== ra) return rb - ra;
+                    const da = (a.pass1>0?1:0)+(a.pass2>0?1:0)+(a.correct3>0?1:0);
+                    const db = (b.pass1>0?1:0)+(b.pass2>0?1:0)+(b.correct3>0?1:0);
+                    if (db !== da) return db - da;
+                    return (b.practiceTime||0) - (a.practiceTime||0);
+                });
+                function esc(v) {
+                    v = (v === null || v === undefined) ? '' : String(v);
+                    return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+                }
+                const head = ['排名','姓名/学号','正确率(%)','通关关数','练习次数','练习时长(分钟)','累计答错','最高接对','芳香族错误','酸性错误','碱性错误','极性中性错误','非极性脂肪族错误','设备数','最后更新时间'];
+                const rows = list.map(function(s, i) {
+                    const wc = s.wrongCount || {};
+                    return [
+                        i + 1,
+                        s.name || '同学',
+                        calcRate(s) + '%',
+                        (s.pass1>0?1:0)+(s.pass2>0?1:0)+(s.correct3>0?1:0),
+                        s.practice || 0,
+                        ((s.practiceTime||0) / 60).toFixed(1),
+                        s.totalWrong || 0,
+                        s.bestCorrect || 0,
+                        wc.fx||0, wc.su||0, wc.jx||0, wc.zx||0, wc.fqx||0,
+                        s.deviceCount || 1,
+                        s.updatedAt ? new Date(s.updatedAt).toLocaleString('zh-CN', {hour12:false}) : ''
+                    ];
+                });
+                const csv = '\ufeff' + [head].concat(rows).map(function(r){ return r.map(esc).join(','); }).join('\r\n');
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = '氨基酸学习数据_' + new Date().toISOString().slice(0,10) + '.csv';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(function(){ URL.revokeObjectURL(url); }, 500);
+            });
         }
 
         // ========== 同步状态条 ==========
