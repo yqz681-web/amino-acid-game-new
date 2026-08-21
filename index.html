@@ -734,9 +734,9 @@
     <div class="page" id="p2">
         <div class="rule">🕹️ 拖动飞机接住正确氨基酸；累计接错≥10则失败</div>
         <div class="plane-area" id="area2"><div class="plane" id="plane">✈️</div></div>
-        <div style="display: flex; justify-content: space-around; margin: 14px 0; color:#023059; font-weight: bold; text-shadow:0 0 5px white;">
-            <span>🏷️ 类别：<span id="m2" style="color:#003f6b;"></span></span>
-            <span>⏳ 剩余 <span id="time2" style="color:#b00020;">0</span>s</span>
+        <div style="display: flex; justify-content: space-around; margin: 14px 0; color:#e6e2ff; font-weight: bold;">
+            <span>🏷️ 类别：<span id="m2" style="color:#ffd54a;"></span></span>
+            <span>⏳ 剩余 <span id="time2" style="color:#fb7185;">0</span>s</span>
         </div>
         <div style="display: flex; gap: 20px; justify-content: center; font-weight: bold;">
             <span>✅ 接对 <span id="correct2">0</span>/10</span>
@@ -839,9 +839,9 @@
                 <div class="stat-card"><div class="stat-num" id="t_avg_rate">0%</div><div class="stat-label">平均正确率</div></div>
                 <div class="stat-card"><div class="stat-num" id="t_pass_total">0</div><div class="stat-label">通关合计</div></div>
             </div>
-            <div class="stat-block"><div class="stat-block-title">📌 班级评价</div><div id="t_class_overview" style="color:#02457a;font-weight:700;">暂无数据</div></div>
-            <div class="stat-block"><div class="stat-block-title">⚠️ 共性薄弱</div><div id="t_class_weak" style="color:#b02b2b;font-weight:600;">暂无数据</div></div>
-            <div class="stat-block"><div class="stat-block-title">🧑‍🎓 学生明细</div><div id="t_student_list"><div style="color:#5b7a99;font-size:14px;">暂无数据</div></div></div>
+            <div class="stat-block"><div class="stat-block-title">📌 班级评价</div><div id="t_class_overview" style="color:#e6e2ff;font-weight:700;">暂无数据</div></div>
+            <div class="stat-block"><div class="stat-block-title">⚠️ 共性薄弱</div><div id="t_class_weak" style="color:#fda4af;font-weight:600;">暂无数据</div></div>
+            <div class="stat-block"><div class="stat-block-title">🧑‍🎓 学生明细</div><div id="t_student_list"><div style="color:#a9a3cf;font-size:14px;">暂无数据</div></div></div>
         </div>
     </div>
 </div>
@@ -1175,14 +1175,14 @@
                 return [x, y];
             });
             const line = pts.map(function(p, i){ return (i===0?'M':'L') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join(' ');
-            const dots = pts.map(function(p){ return '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="3.5" fill="#1a6ec9"/>'; }).join('');
+            const dots = pts.map(function(p){ return '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="3.5" fill="#4f8cff"/>'; }).join('');
             const last = pts[pts.length - 1];
             box.innerHTML = '<svg class="trend-svg" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet">'
-                + '<line x1="' + pad + '" y1="' + (H-pad) + '" x2="' + (W-pad) + '" y2="' + (H-pad) + '" stroke="#9ab6d4" stroke-width="1"/>'
-                + '<line x1="' + pad + '" y1="' + pad + '" x2="' + pad + '" y2="' + (H-pad) + '" stroke="#9ab6d4" stroke-width="1"/>'
+                + '<line x1="' + pad + '" y1="' + (H-pad) + '" x2="' + (W-pad) + '" y2="' + (H-pad) + '" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>'
+                + '<line x1="' + pad + '" y1="' + pad + '" x2="' + pad + '" y2="' + (H-pad) + '" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>'
                 + '<path d="' + line + '" fill="none" stroke="#3f9eff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'
                 + dots
-                + '<text x="' + last[0].toFixed(1) + '" y="' + (last[1]-8).toFixed(1) + '" font-size="11" fill="#0a4c8c" text-anchor="middle" font-weight="bold">' + lastRate(rates) + '%</text>'
+                + '<text x="' + last[0].toFixed(1) + '" y="' + (last[1]-8).toFixed(1) + '" font-size="11" fill="#e6e2ff" text-anchor="middle" font-weight="bold">' + lastRate(rates) + '%</text>'
                 + '</svg>';
         }
         function lastRate(rates) { return rates[rates.length - 1]; }
@@ -1253,7 +1253,7 @@
                     + (swList ? '<div class="student-weak">薄弱：' + swList + '</div>' : '')
                     + '</div>';
             });
-            document.getElementById('t_student_list').innerHTML = html || '<div style="color:#5b7a99;font-size:14px;">暂无数据</div>';
+            document.getElementById('t_student_list').innerHTML = html || '<div style="color:#a9a3cf;font-size:14px;">暂无数据</div>';
         }
 
         // ========== 同步状态条 ==========
@@ -1377,7 +1377,7 @@
         function startTimer() { clearInterval(countDownTimer); countDownTimer = setInterval(() => { timeLeft--; document.getElementById('time2').innerText = timeLeft; if (timeLeft <= 0) { stopAllIntervals(); showTip("⏰ 时间到！挑战失败", false); document.getElementById('start2').style.display = 'block'; } }, 1000); }
         function startFalling() {
             stopAllIntervals(); fallList.forEach(i => i.el?.remove()); fallList = []; const area = document.getElementById('area2');
-            fallTimer = setInterval(() => { if (Math.random() < 0.45) return; const cfg = groupConfig[currentGroupIndex]; const targets = Object.keys(d3).filter(k => d3[k].t === cfg.name); const all = Object.keys(d3); const isTarget = Math.random() > 0.35; const name = isTarget ? targets[Math.floor(Math.random()*targets.length)] : all[Math.floor(Math.random()*all.length)]; const el = document.createElement('div'); el.className = 'fall-item'; el.innerText = name; const x = Math.random() * (area.clientWidth - 72); el.style.left = x + 'px'; el.style.top = '0px'; area.appendChild(el); fallList.push({ el, name, isTarget, x, y: 0 }); }, 600);
+            fallTimer = setInterval(() => { if (Math.random() < 0.45) return; const cfg = groupConfig[currentGroupIndex]; const targets = Object.keys(d3).filter(k => d3[k].t === cfg.name); const all = Object.keys(d3); const nonTargets = all.filter(k => d3[k].t !== cfg.name); const isTarget = Math.random() > 0.35; const name = isTarget ? targets[Math.floor(Math.random()*targets.length)] : nonTargets[Math.floor(Math.random()*nonTargets.length)]; const el = document.createElement('div'); el.className = 'fall-item'; el.innerText = name; const x = Math.random() * (area.clientWidth - 72); el.style.left = x + 'px'; el.style.top = '0px'; area.appendChild(el); fallList.push({ el, name, isTarget, x, y: 0 }); }, 600);
             moveTimer = setInterval(() => { for (let i = fallList.length - 1; i >= 0; i--) { const item = fallList[i]; item.y += 3.2; item.el.style.top = item.y + 'px'; const itemLeft = item.x, itemRight = item.x + 72, itemTop = item.y, itemBottom = item.y + 72; const planeLeft = planeX, planeRight = planeX + planeW, planeTop = planeY, planeBottom = planeY + planeH; if (itemLeft < planeRight && itemRight > planeLeft && itemTop < planeBottom && itemBottom > planeTop) { addClick(); if (item.isTarget) { currentCorrect++; recordBest(currentCorrect); document.getElementById('correct2').innerText = currentCorrect; item.el.remove(); fallList.splice(i, 1); checkComplete(); } else { item.el.style.background = "#ff4444"; item.el.style.borderColor = "#cc0000"; item.el.innerText = "💥错误"; totalWrong++; recordWrong(groupConfig[currentGroupIndex].type); document.getElementById('wrong2').innerText = totalWrong; setTimeout(() => { if(item.el) item.el.remove(); }, 150); fallList.splice(i, 1); if (totalWrong >= 10) { stopAllIntervals(); showTip("❌ 累计错误已满10个，挑战失败", false); document.getElementById('start2').style.display = 'block'; return; } } } else if (item.y > area.clientHeight) { item.el.remove(); fallList.splice(i, 1); } } }, 20);
         }
         function checkComplete() { const cfg = groupConfig[currentGroupIndex]; if (currentCorrect >= cfg.needCorrect) { stopAllIntervals(); 
