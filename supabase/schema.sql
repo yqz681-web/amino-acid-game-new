@@ -137,7 +137,16 @@ $$;
 -- 5) 启用实时订阅（Realtime），前端据此实时刷新数据档案
 -- 关键：开启 replica identity full，UPDATE 事件才会推送完整行（否则只推主键，前端收不到更新后的数据）
 alter table public.learning_records replica identity full;
-alter publication supabase_realtime add table public.learning_records;
+-- add table 需幂等（PostgreSQL 的 alter publication add table 没有 if not exists，用 DO block 检查）
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'learning_records'
+  ) then
+    alter publication supabase_realtime add table public.learning_records;
+  end if;
+end $$;
 
 -- 6) 字段迁移（幂等）：为已存在的表补充新增列（如练习时长 practice_time）
 --    每次新增字段后，在此追加一行即可；重跑整个文件即可完成升级
