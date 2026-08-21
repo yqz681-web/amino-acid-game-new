@@ -725,6 +725,19 @@
     </div>
 </div>
 
+<!-- 教师端密码验证弹窗 -->
+<div class="welcome-overlay" id="teacherPwdModal">
+    <div class="welcome-card">
+        <div class="welcome-badge">🔒</div>
+        <h2 class="welcome-title">教师端验证</h2>
+        <p class="welcome-sub">请输入教师密码<br>查看学生数据</p>
+        <input class="welcome-input" id="teacherPwdInput" type="password" placeholder="请输入教师密码" maxlength="20">
+        <button class="welcome-btn primary" id="teacherPwdGo">🔓 进入教师后台</button>
+        <button class="welcome-btn ghost" id="teacherPwdCancel">取消</button>
+        <div class="welcome-note" id="teacherPwdNote"></div>
+    </div>
+</div>
+
 <div class="container">
     <h2 class="title">🧬 氨基酸分类·闯关学园</h2>
     <div class="tabs">
@@ -1084,12 +1097,43 @@
             document.getElementById('panelStudent').classList.remove('hide');
             document.getElementById('panelTeacher').classList.add('hide');
         };
-        document.getElementById('btnTeacher').onclick = ()=>{
+        const TEACHER_PWD = '98768';
+        let teacherAuthed = sessionStorage.getItem('amino_teacher_auth') === '1';
+        function enterTeacher() {
             document.getElementById('btnTeacher').classList.add('active');
             document.getElementById('btnStudent').classList.remove('active');
             document.getElementById('panelTeacher').classList.remove('hide');
             document.getElementById('panelStudent').classList.add('hide');
             renderTeacher();
+        }
+        function showTeacherPwd() {
+            document.getElementById('teacherPwdInput').value = '';
+            document.getElementById('teacherPwdNote').innerText = '';
+            document.getElementById('teacherPwdNote').style.color = '';
+            document.getElementById('teacherPwdModal').classList.add('show');
+            setTimeout(function(){ document.getElementById('teacherPwdInput').focus(); }, 200);
+        }
+        function closeTeacherPwd() {
+            document.getElementById('teacherPwdModal').classList.remove('show');
+        }
+        document.getElementById('teacherPwdGo').onclick = function() {
+            if (document.getElementById('teacherPwdInput').value === TEACHER_PWD) {
+                teacherAuthed = true;
+                sessionStorage.setItem('amino_teacher_auth', '1');
+                closeTeacherPwd();
+                enterTeacher();
+            } else {
+                document.getElementById('teacherPwdNote').innerText = '❌ 密码错误，请重试';
+                document.getElementById('teacherPwdNote').style.color = '#fb7185';
+            }
+        };
+        document.getElementById('teacherPwdCancel').onclick = closeTeacherPwd;
+        document.getElementById('teacherPwdInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') document.getElementById('teacherPwdGo').click();
+        });
+        document.getElementById('btnTeacher').onclick = ()=>{
+            if (teacherAuthed) enterTeacher();
+            else showTeacherPwd();
         };
 
         // ========== 身份绑定 ==========
@@ -1273,7 +1317,7 @@
         }
 
         // ========== 导出学习数据（CSV） ==========
-        function exportCSV() {
+        window.exportCSV = function() {
             sync.getAllUsers(function(users) {
                 const list = (users || []).slice().sort(function(a, b) {
                     const ra = calcRate(a), rb = calcRate(b);
