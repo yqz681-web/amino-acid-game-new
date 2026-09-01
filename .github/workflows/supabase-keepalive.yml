@@ -37,6 +37,8 @@ jobs:
 
   backup:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # 允许把备份文件提交回仓库
     steps:
       - name: 检出仓库
         uses: actions/checkout@v4
