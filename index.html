@@ -837,6 +837,19 @@
                 <div class="stat-card"><div class="stat-num" id="s_practice_time">0</div><div class="stat-label">练习时长</div></div>
             </div>
 
+            <!-- 数据备份（无云端时手动跨端） -->
+            <div class="stat-block">
+                <div class="stat-block-title">💾 数据备份 · 手动跨端</div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <button class="export-btn" onclick="exportMyData()">📤 导出我的数据</button>
+                    <button class="export-btn" onclick="triggerImport()">📥 导入数据</button>
+                </div>
+                <input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="importMyData(event)">
+                <div id="backupNote" style="margin-top:12px; font-size:12px; color:#a9a3cf; line-height:1.7;">
+                    云端未连接时，用「导出」把学习数据存成文件，传到另一台设备后点「导入」即可继续累计（各字段自动取最大值合并，不重复计数）。
+                </div>
+            </div>
+
             <!-- 通关记录 -->
             <div class="stat-block">
                 <div class="stat-block-title">🏅 通关记录</div>
@@ -1370,6 +1383,80 @@
                 setTimeout(function(){ URL.revokeObjectURL(url); }, 500);
             });
         }
+
+        // ========== 数据导出 / 导入（无云端时的手动跨端方案） ==========
+        window.exportMyData = function() {
+            var u = sync.getUser() || {};
+            var data = {
+                _type: 'amino-acid-game-backup',
+                version: 1,
+                name: sync.getUserName() || '',
+                user: u,
+                exportedAt: Date.now()
+            };
+            var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            var nm = (sync.getUserName() || '我的学习数据').replace(/[\\/:*?"<>|]/g, '');
+            a.download = '学习数据_' + nm + '_' + new Date().toISOString().slice(0, 10) + '.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(function(){ URL.revokeObjectURL(url); }, 500);
+            var note = document.getElementById('backupNote');
+            note.innerText = '✅ 已导出备份文件，传到另一台设备后点「📥 导入数据」即可继续累计。';
+            note.style.color = '#5eead4';
+        };
+        window.triggerImport = function() {
+            document.getElementById('importFile').click();
+        };
+        window.importMyData = function(e) {
+            var file = e.target.files && e.target.files[0];
+            if (!file) return;
+            var reader = new FileReader();
+            reader.onload = function(ev) {
+                var note = document.getElementById('backupNote');
+                try {
+                    var data = JSON.parse(ev.target.result);
+                    var incoming = data.user || data;
+                    if (!incoming || typeof incoming !== 'object') throw new Error('bad format');
+                    var cur = sync.getUser() || {};
+                    var merged = JSON.parse(JSON.stringify(cur));
+                    // 累加型字段：取较大值（多端合并，不重复计数）
+                    ['practice','pass1','pass2','correct3','click','totalWrong','practiceTime'].forEach(function(f) {
+                        merged[f] = Math.max(Number(cur[f]) || 0, Number(incoming[f]) || 0);
+                    });
+                    merged.bestCorrect = Math.max(Number(cur.bestCorrect) || 0, Number(incoming.bestCorrect) || 0);
+                    var wcIn = incoming.wrongCount || {};
+                    merged.wrongCount = merged.wrongCount || {};
+                    ['fx','su','jx','zx','fqx'].forEach(function(k) {
+                        merged.wrongCount[k] = Math.max(Number(merged.wrongCount[k]) || 0, Number(wcIn[k]) || 0);
+                    });
+                    // 正确率历史：按 id 去重合并，保留最近 50 条
+                    var h1 = cur.historyRate || [], h2 = incoming.historyRate || [], seen = {};
+                    merged.historyRate = h1.concat(h2).filter(function(h){
+                        if (!h || !h.id || seen[h.id]) return false;
+                        seen[h.id] = 1; return true;
+                    }).sort(function(a, b){ return (a.t || 0) - (b.t || 0); }).slice(-50);
+                    merged.updatedAt = Date.now();
+                    localStorage.setItem('amino_local_user_v2', JSON.stringify(merged));
+                    if (data.name && !sync.isBound()) {
+                        localStorage.setItem('amino_user_name_v2', data.name);
+                        localStorage.setItem('amino_user_id_v2', 'stu_' + data.name);
+                    }
+                    sync.user = merged;
+                    note.innerText = '✅ 导入成功！数据已与本机合并（各字段取最大值，不会重复计数）。';
+                    note.style.color = '#5eead4';
+                    renderStudent();
+                } catch (err) {
+                    note.innerText = '❌ 导入失败：请选择本游戏导出的 .json 备份文件。';
+                    note.style.color = '#fb7185';
+                }
+                e.target.value = '';
+            };
+            reader.readAsText(file);
+        };
 
         // ========== 同步状态条 ==========
         function renderSyncBar() {
