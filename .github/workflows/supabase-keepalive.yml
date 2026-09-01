@@ -1,0 +1,67 @@
+name: Supabase 保活与数据备份
+
+# 作用：
+#   1) 每 3 天自动访问一次 Supabase，避免免费项目因「7 天不活动」被暂停/删除
+#   2) 每周一自动把全部学习数据备份到本仓库 backups/ 目录（双重保险）
+#
+# 说明：Supabase 的 Publishable key（原 anon key）是「公开密钥」，前端代码里本来就有，
+#       配合 RLS 行级安全使用，直接写在 CI 里不存在安全风险。
+
+on:
+  schedule:
+    - cron: '0 2 */3 * *'   # 保活：每 3 天 UTC 02:00（北京时间 10:00）
+    - cron: '0 3 * * 1'     # 备份：每周一 UTC 03:00（北京时间 11:00）
+  workflow_dispatch:        # 允许在 Actions 页面手动触发
+
+env:
+  SUPABASE_URL: https://ydigkfhgbyjxzufnhadd.supabase.co
+  SUPABASE_ANON_KEY: sb_publishable_pjGswyzJ4nQeXXRtb8dkbg_KKiRtTtd
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 访问 Supabase 保持活跃
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" \
+            "$SUPABASE_URL/rest/v1/learning_records?select=id&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            --max-time 25)
+          echo "Supabase 响应码: $code"
+          if [ "$code" = "200" ]; then
+            echo "✅ 项目保持活跃，数据不会因休眠被清除"
+          else
+            echo "⚠️ 响应异常($code)，请登录 Supabase 控制台检查项目状态"
+          fi
+
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 导出全部学习数据到仓库
+        run: |
+          mkdir -p backups
+          today=$(date +%Y-%m-%d)
+          curl -s "$SUPABASE_URL/rest/v1/learning_records?select=*" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            --max-time 30 -o "backups/learning-data-$today.json"
+          size=$(wc -c < "backups/learning-data-$today.json")
+          echo "已备份 $size 字节 → backups/learning-data-$today.json"
+          # 保留最近 30 份备份
+          ls -1t backups/*.json 2>/dev/null | tail -n +31 | xargs -r rm -f
+
+      - name: 提交备份
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add backups/ 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "无数据变化，跳过提交"
+          else
+            git commit -m "自动备份学习数据 $(date +%Y-%m-%d)"
+            git push
+          fi
