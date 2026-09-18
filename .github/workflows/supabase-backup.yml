@@ -1,0 +1,45 @@
+name: Supabase 数据备份
+
+# 每周一自动把全部学习数据备份到本仓库 backups/ 目录，作为双重保险。
+
+on:
+  schedule:
+    - cron: '0 3 * * 1'     # 每周一 UTC 03:00（北京时间 11:00）
+  workflow_dispatch:
+
+env:
+  SUPABASE_URL: https://ydigkfhgbyjxzufnhadd.supabase.co
+  SUPABASE_ANON_KEY: sb_publishable_pjGswyzJ4nQeXXRtb8dkbg_KKiRtTtd
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 导出全部学习数据
+        run: |
+          mkdir -p backups
+          today=$(date +%Y-%m-%d)
+          curl -s "$SUPABASE_URL/rest/v1/learning_records?select=*" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            --max-time 30 -o "backups/learning-data-$today.json"
+          size=$(wc -c < "backups/learning-data-$today.json")
+          echo "已备份 $size 字节 → backups/learning-data-$today.json"
+          ls -1t backups/*.json 2>/dev/null | tail -n +31 | xargs -r rm -f
+
+      - name: 提交备份
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add backups/ 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "无数据变化，跳过提交"
+          else
+            git commit -m "自动备份学习数据 $(date +%Y-%m-%d)"
+            git push
+          fi
